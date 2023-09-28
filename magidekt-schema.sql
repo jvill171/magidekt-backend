@@ -8,31 +8,36 @@ CREATE TABLE users (
   is_admin BOOLEAN NOT NULL DEFAULT FALSE
 );
 
+CREATE TYPE enum_formats AS ENUM (
+    'standard', 'future', 'historic', 'gladiator', 'pioneer', 'explorer',
+    'modern', 'legacy', 'pauper', 'vintage', 'penny', 'commander',
+    'oathbreaker', 'brawl', 'historicbrawl', 'alchemy', 'paupercommander',
+    'duel', 'oldschool', 'premodern', 'predh'
+    );
+
 -- Create the 'decks' table
 CREATE TABLE decks (
   id SERIAL PRIMARY KEY,
   deck_name VARCHAR(50) NOT NULL,
   description VARCHAR(200),
-  format ENUM (
-    'standard', 'future', 'historic', 'gladiator', 'pioneer', 'explorer',
-    'modern', 'legacy', 'pauper', 'vintage', 'penny', 'commander',
-    'oathbreaker', 'brawl', 'historicbrawl', 'alchemy', 'paupercommander',
-    'duel', 'oldschool', 'premodern', 'predh'
-    ),
-  color_identity VARCHAR(5)
+  format enum_formats,
+  color_identity VARCHAR(5),
   deck_owner INT NOT NULL
     REFERENCES users(id)
     ON DELETE CASCADE
 );
 
+-- CREATE TYPE enum_tags AS ENUM (
+--     'Aggro', 'Control', 'Combo', 'Midrange', 'Ramp', 'Burn',
+--     'Mill', 'Token', 'Voltron', 'Tribal', 'Reanimator', 'Stax',
+--     'Superfriends', 'Aristocrats', 'Land Destruction', 'Tempo',
+--     'Prison', 'Infect', 'Storm');
+
 -- Create the 'tags' table
 CREATE TABLE tags (
   id SERIAL PRIMARY KEY,
-  tag ENUM (
-    'Aggro', 'Control', 'Combo', 'Midrange', 'Ramp', 'Burn',
-    'Mill', 'Token', 'Voltron', 'Tribal', 'Reanimator', 'Stax',
-    'Superfriends', 'Aristocrats', 'Land Destruction', 'Tempo',
-    'Prison', 'Infect', 'Storm') NOT NULL
+  tag TEXT NOT NULL
+  -- tag enum_tags NOT NULL
 );
 
 -- Create the 'decks_tags' table
