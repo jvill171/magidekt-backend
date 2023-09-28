@@ -1,5 +1,5 @@
 "use strict";
-/** Database setup for jobly. */
+/** Database setup for magidekt. */
 const { Client } = require("pg");
 const { getDatabaseUri } = require("./config");
 
