@@ -8,7 +8,8 @@ CREATE TABLE users (
   is_admin BOOLEAN NOT NULL DEFAULT FALSE
 );
 
-CREATE TYPE enum_formats AS ENUM (
+-- Create enum for format (used in decks)
+CREATE TYPE deck_formats AS ENUM (
     'standard', 'future', 'historic', 'gladiator', 'pioneer', 'explorer',
     'modern', 'legacy', 'pauper', 'vintage', 'penny', 'commander',
     'oathbreaker', 'brawl', 'historicbrawl', 'alchemy', 'paupercommander',
@@ -20,34 +21,13 @@ CREATE TABLE decks (
   id SERIAL PRIMARY KEY,
   deck_name VARCHAR(50) NOT NULL,
   description VARCHAR(200),
-  format enum_formats,
+  format deck_formats,
   color_identity VARCHAR(5),
+  tags jsonb,
   deck_owner INT NOT NULL
     REFERENCES users(id)
-    ON DELETE CASCADE
-);
-
--- CREATE TYPE enum_tags AS ENUM (
---     'Aggro', 'Control', 'Combo', 'Midrange', 'Ramp', 'Burn',
---     'Mill', 'Token', 'Voltron', 'Tribal', 'Reanimator', 'Stax',
---     'Superfriends', 'Aristocrats', 'Land Destruction', 'Tempo',
---     'Prison', 'Infect', 'Storm');
-
--- Create the 'tags' table
-CREATE TABLE tags (
-  id SERIAL PRIMARY KEY,
-  tag TEXT NOT NULL
-  -- tag enum_tags NOT NULL
-);
-
--- Create the 'decks_tags' table
-CREATE TABLE decks_tags (
-  deck_id INT 
-    REFERENCES decks(id)
-    ON DELETE CASCADE,
-  tag_id INT
-    REFERENCES tags(id),
-  PRIMARY KEY (deck_id, tag_id)
+    ON DELETE CASCADE, 
+  CONSTRAINT max_tags CHECK (jsonb_array_length(tags) <= 5)
 );
 
 -- Create the 'cards' table

@@ -10,34 +10,17 @@ VALUES ('testuser',
         'testadmin@magidekt.xyz',
         TRUE);
 
-INSERT INTO decks (deck_name, description, format, color_identity, deck_owner)
-VALUES  ('test_deck_1', 'test description of the deck known as test_deck_1', 'commander', 'RGUBW', 1),
-        ('test_deck_2', 'test description of the deck known as test_deck_2', 'standard', 'R', 1);
+INSERT INTO decks (deck_name, description, format, color_identity, tags, deck_owner)
+VALUES  ('test_deck_1', 'test description of the deck known as test_deck_1',
+         'commander', 'RGUBW','["Aggro", "Ramp", "Burn"]'::jsonb, 1),
+        ('test_deck_2', 'test description of the deck known as test_deck_2',
+         'standard', 'R','["Mill", "Token", "Tempo"]'::jsonb, 2),
+        ('test_deck_2', 'test description of the deck known as test_deck_2',
+         'standard', 'R','["Mill", "Token", "Tempo", "Superfriends", "Mill"]'::jsonb, 2);
+         
+-- LIST OF VALID TAGS, TO IMPLEMENT IN FRONTEND 
+-- "Aggro", "Control", "Combo", "Midrange", "Ramp", "Burn", "Mill", "Token", "Voltron", "Tribal", "Reanimator", "Stax", "Superfriends", "Aristocrats","Land Destruction", "Tempo", "Prison", "Infect", "Storm" 
 
-INSERT INTO tags (tag)
-VALUES  ('Aggro'),
-        ('Control'),
-        ('Combo'),
-        ('Midrange'),
-        ('Ramp'),
-        ('Burn'),
-        ('Mill'),
-        ('Token'),
-        ('Voltron'),
-        ('Tribal'),
-        ('Reanimator'),
-        ('Stax'),
-        ('Superfriends'),
-        ('Aristocrats'),
-        ('Land Destruction'),
-        ('Tempo'),
-        ('Prison'),
-        ('Infect'),
-        ('Storm');
-
-INSERT INTO decks_tags (deck_id, tag_id)
-VALUES  (1, 1), (1, 2), (1, 3), (1, 4),
-        (2, 1), (2, 5), (2, 6), (2, 7), (2, 8), (2, 9);
 
 INSERT INTO cards (card_uuid, name, type_line, mana_cost, color_id, img_cdn, img_timestamp)
 VALUES  ('9395fce4-11bf-4934-8323-5be4862c9779',
