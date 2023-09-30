@@ -1,22 +1,22 @@
 -- both test users have the password "password"
 
-INSERT INTO users (username, password, email, is_admin)
-VALUES ('testuser',
+INSERT INTO users (username, display_name, password, email, is_admin)
+VALUES ('testuser', 't_user',
         '$2b$12$AZH7virni5jlTTiGgEg4zu3lSvAw68qVEfSIOjJ3RqtbJbdW/Oi5q',
         'testuser@magidekt.xyz',
         FALSE),
-       ('testadmin',
+       ('testadmin', 't_admin',
         '$2b$12$AZH7virni5jlTTiGgEg4zu3lSvAw68qVEfSIOjJ3RqtbJbdW/Oi5q',
         'testadmin@magidekt.xyz',
         TRUE);
 
 INSERT INTO decks (deck_name, description, format, color_identity, tags, deck_owner)
 VALUES  ('test_deck_1', 'test description of the deck known as test_deck_1',
-         'commander', 'RGUBW','["Aggro", "Ramp", "Burn"]'::jsonb, 1),
+         'commander', 'RGUBW','["Aggro", "Ramp", "Burn"]'::jsonb, 'testuser'),
         ('test_deck_2', 'test description of the deck known as test_deck_2',
-         'standard', 'R','["Mill", "Token", "Tempo"]'::jsonb, 2),
+         'standard', 'R','["Mill", "Token", "Tempo"]'::jsonb, 'testadmin'),
         ('test_deck_2', 'test description of the deck known as test_deck_2',
-         'standard', 'R','["Mill", "Token", "Tempo", "Superfriends", "Mill"]'::jsonb, 2);
+         'standard', 'R','["Mill", "Token", "Tempo", "Superfriends", "Mill"]'::jsonb, 'testadmin');
          
 -- LIST OF VALID TAGS, TO IMPLEMENT IN FRONTEND 
 -- "Aggro", "Control", "Combo", "Midrange", "Ramp", "Burn", "Mill", "Token", "Voltron", "Tribal", "Reanimator", "Stax", "Superfriends", "Aristocrats","Land Destruction", "Tempo", "Prison", "Infect", "Storm" 

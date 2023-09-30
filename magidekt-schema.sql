@@ -1,7 +1,7 @@
 -- Create the 'users' table
 CREATE TABLE users (
-  id SERIAL PRIMARY KEY,
-  username VARCHAR(20) NOT NULL,
+  username VARCHAR(20) PRIMARY KEY,
+  display_name VARCHAR(20) NOT NULL,
   password TEXT NOT NULL,
   email TEXT NOT NULL
     CHECK (position('@' IN email) > 1),
@@ -24,8 +24,8 @@ CREATE TABLE decks (
   format deck_formats,
   color_identity VARCHAR(5),
   tags jsonb,
-  deck_owner INT NOT NULL
-    REFERENCES users(id)
+  deck_owner VARCHAR(20) NOT NULL
+    REFERENCES users(username)
     ON DELETE CASCADE, 
   CONSTRAINT max_tags CHECK (jsonb_array_length(tags) <= 5)
 );
