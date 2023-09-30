@@ -2,7 +2,7 @@
 
 const db = require("../db");
 const bcrypt = require("bcrypt");
-const { sqlForPartialUpdate } = require("../helpers/sql");
+const { sqlForPartialQuery } = require("../helpers/sql");
 const {
   NotFoundError,
   BadRequestError,
@@ -74,11 +74,11 @@ class User {
 
     const result = await db.query(
           `INSERT INTO users
-           (username,
-            display_name,
-            password,
-            email,
-            is_admin)
+              (username,
+              display_name,
+              password,
+              email,
+              is_admin)
            VALUES ($1, $1, $2, $3, $4)
            RETURNING username, email, is_admin AS "isAdmin"`,
         [
@@ -167,7 +167,7 @@ class User {
     if (data.password) {
       data.password = await bcrypt.hash(data.password, BCRYPT_WORK_FACTOR);
     }
-    const { setCols, values } = sqlForPartialUpdate(
+    const { setCols, values } = sqlForPartialQuery(
         data,
         {
           displayName: "display_name",

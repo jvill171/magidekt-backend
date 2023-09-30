@@ -1,10 +1,12 @@
 const { BadRequestError } = require("../expressError");
 
 /**
- * Helper for making selective update queries.
+ * Helper for making selective update/select queries.
  *
  * The calling function can use it to make the SET clause of an SQL UPDATE
  * statement.
+ * 
+ * It can also be used to make the WHERE clause of a SQL SELECT statement.
  *
  * @param dataToUpdate {Object} {field1: newVal, field2: newVal, ...}
  * @param jsToSql {Object} maps js-style data fields to database column names,
@@ -17,7 +19,7 @@ const { BadRequestError } = require("../expressError");
  *     values: ['MTG_Master', 'magidekt@magidekt.xyz'] }
  */
 
-function sqlForPartialUpdate(dataToUpdate, jsToSql) {
+function sqlForPartialQuery(dataToUpdate, jsToSql) {
   const keys = Object.keys(dataToUpdate);
   if (keys.length === 0) throw new BadRequestError("No data");
 
@@ -34,4 +36,4 @@ function sqlForPartialUpdate(dataToUpdate, jsToSql) {
   return returnValue
 }
 
-module.exports = { sqlForPartialUpdate };
+module.exports = { sqlForPartialQuery };
