@@ -1,173 +1,194 @@
 "use strict";
 
 const db = require("../db");
-const { sqlForPartialQuery } = require("../helpers/sql");
-const {
-  NotFoundError,
-  BadRequestError,
-  UnauthorizedError,
-} = require("../expressError");
+const { sqlForBulkInsertQuery } = require("../helpers/sql");
+const { NotFoundError } = require("../expressError");
+const { validateCardIDs } = require("../helpers/validateCardIDs.js")
 
 class Card{
 
-  /** Add a new card.
+  /** Add new cards based on a list of cards.
+   *      deckCards: [{cardId, quantity}, ...]
    *
-   * Returns { cardUUID, name, typeLine, manaCost, colorId, imgCDN, imgTimestamp }
+   * Returns cards:{ rejectedData, added }
+   *    where both rejectedData & added are: [ {cardId, quantity}, ... ]
    * 
+   * Throws NotFoundError if deck not found.
    **/
   
-  static async add(
-      {cardUUID, name, typeLine, manaCost, colorId, imgCDN, imgTimestamp}) {
-    const duplicateCheck = await db.query(
-      `SELECT card_uuid
-       FROM cards
-       WHERE card_uuid = $1`,
-    [cardUUID]);
-    
-    if (duplicateCheck.rows[0]) {
-      throw new BadRequestError(`Duplicate card_uuid: ${cardUUID}`);
-    }
-    
-    const result = await db.query(
-      `INSERT INTO cards
-        (card_uuid, name, type_line, mana_cost, color_id, img_cdn, img_timestamp)
-       VALUES($1, $2, $3, $4, $5, $6, $7)
-       RETURNING card_uuid AS "cardUUID",
-                 name,
-                 type_line AS "typeLine",
-                 mana_cost AS "manaCost",
-                 color_id AS "colorId",
-                 img_cdn AS "imgCDN",
-                 img_timestamp AS "imgTimestamp"`,
-       [cardUUID, name, typeLine, manaCost, colorId, imgCDN, imgTimestamp]);
+  static async add( deckId, {deckCards} ) {
+    // Ensure valid deckId
+    const deckRes = await db.query(
+      `SELECT id FROM decks WHERE id = $1`, [deckId]
+      );
+    const validDeck = deckRes.rows[0]
+    if(!validDeck) throw new NotFoundError(`No deck: ${deckId}`);
 
-    const card = result.rows[0];
-    return card;
+    // Get list of existing cards in deck
+    const existingRes = await db.query(
+      `SELECT card_id FROM cards WHERE deck_id = $1`, [deckId]
+    )
+    const existingCards = existingRes.rows.map(c => c.card_id);
+    
+    //Filter deckCards into 2 arrays, toAdd & toExclude
+    const toAdd = deckCards.filter(card => !existingCards.includes(card.cardId));
+    const toExclude = deckCards.filter(card => existingCards.includes(card.cardId));
+    
+    const {not_found, found} = await validateCardIDs(toAdd)
+    not_found.push(...toExclude)
+
+    const cards = {
+      rejectedData: not_found,
+             added: found
+    }
+    if(found.length > 0){
+      // Build query components
+      const main_vals = cards.added.map(c =>[deckId, c.cardId, c.quantity])
+      const main_ph = sqlForBulkInsertQuery(main_vals);
+      const main_sqlQuery =
+        `INSERT INTO cards (deck_id, card_id, quantity)
+         VALUES ${main_ph}
+         RETURNING card_id AS "cardId",
+                   quantity`
+      
+      const addedRes = await db.query(main_sqlQuery, [...main_vals.flat()]);
+      // Overwrite cards.added to ensure return data accuracy
+      cards.added = addedRes.rows;  
+    }
+
+    return cards
   }
 
-  /** Find all cards.
+  /** Find all cards from deck with [deckId].
    *
-   * Returns [{ cardUUID, name, typeLine, manaCost, colorId, imgCDN, imgTimestamp }, ...]
+   * Returns [ {cardId, quantity}, ... ]
    * 
-   * Note: returns up to 50 results by default, paginated
+   * Throws NotFoundError if deck not found.
    **/
   
-  static async findAll(limit=50, page=1) {
-    const maxCards = await db.query( `SELECT COUNT(*) FROM cards`);
-    const maxPages = (maxCards / limit);
-    if(page > maxPages) throw NotFoundError(`No more cards on page`, page)
+  static async get(deckId) {
+    // Ensure valid deckId
+    const deckRes = await db.query(
+      `SELECT id FROM decks WHERE id = $1`, [deckId]
+      );
+    const validDeck = deckRes.rows[0]
+    if(!validDeck) throw new NotFoundError(`No deck: ${deckId}`)
 
-    const cardOffset = (page - 1) * limit;
     const result = await db.query(
-      `SELECT card_uuid AS "cardUUID",
-              name,
-              type_line AS "typeLine",
-              mana_cost AS "manaCost",
-              color_id AS "colorId",
-              img_cdn AS "imgCDN",
-              img_timestamp AS "imgTimestamp"
+      `SELECT card_id AS "cardId",
+              quantity
         FROM cards
-        ORDER BY name
-        LIMIT $1
-        OFFSET $2;`,[limit, cardOffset]
+        WHERE deck_id = $1`,[deckId]
     );
     return result.rows;
   }
 
-  /** Given some cardUUID, return data on that card.
+  /** Find all cards in all decks
    *
-   * Returns { cardUUID, name, typeLine, manaCost, colorId, imgCDN, imgTimestamp }
+   * Returns allCards: [ {cardId, quantity}, ... ]
    *
-   * Throws NotFoundError if user not found.
+   * Throws NotFoundError if no cards.
    **/
-  static async get(cardUUID) {
+  static async findAll() {
     const cardRes = await db.query(
-      `SELECT card_uuid AS "cardUUID",
-              name,
-              type_line AS "typeLine",
-              mana_cost AS "manaCost",
-              color_id AS "colorId",
-              img_cdn AS "imgCDN",
-              img_timestamp AS "imgTimestamp"
-      FROM cards
-      WHERE card_uuid = $1`, [cardUUID]
+      `SELECT deck_id AS "deckId"
+              card_id AS "cardId",
+              quantity
+       FROM cards`,
     );
 
-    const card = cardRes.rows[0];
+    const allCards = cardRes.rows;
 
-    if (!card) throw new NotFoundError(`No card with cardUUID: ${cardUUID}`);
+    if (allCards.length < 1) throw new NotFoundError(`No cards in DB`);
 
-    return card;
+    return allCards;
   }
   
-//   /** Update data with `data`.
-//    *
-//    * This is a "partial update" --- it's fine if data doesn't contain
-//    * all the fields; this only changes provided ones.
-//    *
-//    * Data can include:
-//    *   { name, typeLine, manaCost, colorId, imgCDN, imgTimestamp }
-//    *
-//    * Returns { cardUUID, name, typeLine, manaCost, colorId, imgCDN, imgTimestamp }
-//    *
-//    * Throws NotFoundError if not found.
-//    */
-  static async update(cardUUID, data) {
-    const { setCols, values } = sqlForPartialQuery(
-        data,
-        {
-          cardUUID: "card_uuid",
-          typeLine: "type_line",
-          manaCost: "mana_cost",
-          colorId: "color_id",
-          imgCDN: "img_cdn",
-          imgTimestamp: "img_timestamp",
-        });
-    const cardUUID_VarIdx = "$" + (values.length + 1);
-    const querySql = 
-        `UPDATE cards 
-         SET ${setCols} 
-         WHERE card_uuid = ${cardUUID_VarIdx} 
-         RETURNING card_uuid AS "cardUUID",
-                   name,
-                   type_line AS "typeLine",
-                   mana_cost AS "manaCost",
-                   color_id AS "colorId",
-                   img_cdn AS "imgCDN",
-                   img_timestamp AS "imgTimestamp"`;
-
-    const result = await db.query(querySql, [...values, cardUUID]);
-    const card = result.rows[0];
-
-    if (!card) throw new NotFoundError(`No card with UUID: ${cardUUID}`);
-
-    return card;
-  }
   
-  /** Delete given user from database; returns undefined. */
+  /** Update Cards with {deckCards}.
+   *
+   * deckCards is [{cardId, quantity}, ...]
+   *
+   * Returns cards: { rejectedData, updated }
+   *    where both rejectedData & updated are: [{cardId, quantity}, ...]
+   *
+   * Throws NotFoundError if deck not found.
+   */
+  static async update(deckId, {deckCards}) {
+    // Ensure valid deckId
+    const deckRes = await db.query(`SELECT id FROM decks WHERE id = $1`, [deckId]);
+    const validDeck = deckRes.rows[0]
+    if(!validDeck) throw new NotFoundError(`No deck: ${deckId}`);
 
-  static async remove(cardUUID) {
-    // Check that card does not exist in another deck via decks_cards table
-    let dependencyCheck = await db.query(
-      `SELECT card_id AS "cardID"
-       FROM decks_cards
-       WHERE card_id = $1`, [cardUUID]
+    // Get list of existing cards in deck
+    const existingRes = await db.query(
+      `SELECT card_id FROM cards WHERE deck_id = $1`, [deckId]
     )
+    const existingCards = existingRes.rows.map(c => c.card_id);
+    
+    //Filter deckCards into 2 arrays, rejectedData & toUpdate
+    const rejectedData = deckCards.filter(card => !existingCards.includes(card.cardId));
+    const toUpdate = deckCards.filter(card => existingCards.includes(card.cardId));
+    
+    const cards = {  rejectedData, updated: toUpdate }
 
-    if (dependencyCheck.rows[0]) {
-      throw new BadRequestError(`At least one deck is using card: ${cardUUID}`);
+    if(toUpdate.length > 0){
+      const cases = toUpdate.map((_, idx) =>
+          `WHEN card_id = $${2*idx + 1} THEN $${2*idx + 2}`);
+      // Build query components
+      const ph_IDs = toUpdate.map((_, idx) =>
+          `$${ (2 * cases.length) + (idx + 1)}`) 
+      const ph_deckID = `$${ (2 * cases.length) + (ph_IDs.length + 1)}`
+      const sqlCases = cases.join("\n")
+      // Build query values 
+      const values     = toUpdate.flatMap(c => [c.cardId, c.quantity])
+      const cardIdList = toUpdate.flatMap(c => [c.cardId])
+      values.push(...cardIdList)
+      // Build query
+      const querySql =
+        `UPDATE cards
+         SET quantity = 
+         CASE
+          ${sqlCases}
+         ELSE quantity
+         END
+         WHERE card_id IN (${ph_IDs})
+         AND deck_id = ${ph_deckID}
+         RETURNING card_id AS "cardId",
+                   quantity`;
+
+      const updateRes = await db.query(querySql, [...values, deckId])
+      // Overwrite cards.updated to ensure return data accuracy
+      cards.updated = updateRes.rows
     }
 
-    let result = await db.query(
-      `DELETE
-       FROM cards
-       WHERE card_uuid = $1
-       RETURNING card_uuid`, [cardUUID]
-    );
+    return cards;
+}
+  
+  /** Delete one or more cards from a deck in the database;
+   * 
+   * returns undefined.
+   * 
+   * Throws NotFoundError if deck not found.
+   * */
 
-    const card = result.rows[0];
+  static async remove(deckId, cardIds) {
+    // Ensure valid deckId
+    const deckRes = await db.query(`SELECT id FROM decks WHERE id = $1`, [deckId]);
+    const validDeck = deckRes.rows[0]
+    if(!validDeck) throw new NotFoundError(`No deck: ${deckId}`);
 
-    if (!card) throw new NotFoundError(`No card with UUID: ${cardUUID}`);
+    // Do NOT check that every card being deleted exists
+    // Instead, simply attempt to delete any cards anyways, even if invalid
+    const ph_IDs = cardIds.map((_, idx)=> `$${idx + 1}`);
+
+    const sqlQuery = 
+      `DELETE from cards
+       WHERE card_id IN (${ph_IDs})
+       AND deck_id = $${cardIds.length + 1}
+       RETURNING card_id AS "cardId"`
+
+    await db.query( sqlQuery, [...cardIds, deckId])
   }
 }
 
