@@ -1,0 +1,55 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "http://example.com/example.json",
+    "type": "object",
+    "properties": {
+        "deckName": {
+            "type": "string",
+            "maxLength": 50
+        },
+        "description": {
+            "type": "string",
+            "maxLength": 200
+        },
+        "format": {
+            "type": "string",
+            "enum": [
+                "standard",
+                "future",
+                "historic",
+                "gladiator",
+                "pioneer",
+                "explorer",
+                "modern",
+                "legacy",
+                "pauper",
+                "vintage",
+                "penny",
+                "commander",
+                "oathbreaker",
+                "brawl",
+                "historicbrawl",
+                "alchemy",
+                "paupercommander",
+                "duel",
+                "oldschool",
+                "premodern",
+                "predh"
+            ]
+        },
+        "color_identity": {
+          "type": "string",
+          "maxLength": 5
+        },
+        "tags": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            },
+            "maxItems": 5,
+            "uniqueItems": true
+        }
+    },
+    "required": [],
+    "additionalProperties": false
+}

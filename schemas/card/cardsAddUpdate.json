@@ -1,0 +1,28 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "http://example.com/example.json",
+    "type": "object",
+    "properties": {
+        "deckCards": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "cardId": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "quantity": {
+                        "type": "integer",
+                        "minimum": 1
+                    }
+                },
+                "required": ["cardId", "quantity"]
+            },
+            "minItems": 1,
+            "uniqueItems": true
+        }
+    },
+    "required": ["deckCards"],
+    "additionalProperties": false
+}
