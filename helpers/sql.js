@@ -29,11 +29,40 @@ function sqlForPartialQuery(dataToUpdate, jsToSql) {
       `"${jsToSql[colName] || colName}"=$${idx + 1}`
   );
 
-   const returnValue = {
+  return {
     setCols: cols.join(", "),
     values: Object.values(dataToUpdate),
   };
-  return returnValue
 }
 
-module.exports = { sqlForPartialQuery };
+/**
+ * Helper for bulk inserting items from an array
+ * 
+ * @param dataToAdd Array of Objects [ { prop1, prop2, ... }, ...]
+ * 
+ * @returns placeholders
+ * 
+ * @example [{"cardId": 'A', "quantity": 2}, {"cardId": 'B', "quantity": 3}] =>
+ *     placeholders: '($1, $2), ($3, $4)'
+ */
+function sqlForBulkInsertQuery(dataToAdd){
+  if(dataToAdd.length === 0) throw new BadRequestError("No Data")
+
+  // Based on first obj in array, count how many properties to expect
+  const keyLen = Object.keys(dataToAdd[0]).length;
+
+  // [ {"p1": "A", "p2": 2}, {"p1": "B", "p2": 3}, ... ] => ['($1, $2)', '($3, $4)', ...]
+  const phArr = dataToAdd.map((_, idx) => {
+    const ph = Array.from({ length: keyLen }, (_, propCount) =>
+      `$${idx * keyLen + propCount + 1}`
+    );
+    return `(${ph.join(", ")})`;
+  });
+
+  // phArr['($1, $2)', '($3, $4)', ...]  =>  '($1, $2), ($3, $4), ...'
+  const placeholders = phArr.join();
+
+  return placeholders;
+}
+
+module.exports = { sqlForPartialQuery, sqlForBulkInsertQuery};
