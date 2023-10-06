@@ -6,7 +6,7 @@ const { NotFoundError } = require("../expressError");
 
 class Deck{
 
-    /** Create a new, empty, deck.✅✅✅✅
+    /** Create a new, empty, deck.
      *
     * Returns { deckName, description, format, colorIdentity, tags, deckOwner}
     * 
