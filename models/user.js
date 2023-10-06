@@ -29,8 +29,7 @@ class User {
                   email,
                   is_admin AS "isAdmin"
            FROM users
-           WHERE username = $1`,
-        [username],
+           WHERE username = $1`, [username]
     );
 
     const user = result.rows[0];
@@ -125,23 +124,16 @@ class User {
                 email,
                 is_admin AS "isAdmin"
          FROM users
-         WHERE username = $1`,
-      [username]
-  );
-
+         WHERE username = $1`, [username]);
   const user = userRes.rows[0];
 
   if (!user) throw new NotFoundError(`No user: ${username}`);
 
-
   const decksRes = await db.query(
-    `SELECT id,
-            deck_name AS "deckName",
-            format,
-            color_identity AS "colorIdentity"
+    `SELECT COUNT(id) AS "deckCount"
      FROM decks
-     WHERE deck_owner = $1`, [user.username]);
-  user.decks = decksRes.rows
+     WHERE deck_owner = $1`, [username]);
+  user.deckCount = decksRes.rows[0].deckCount
 
   return user;
 }
@@ -192,7 +184,6 @@ class User {
   }
 
   /** Delete given user from database; returns undefined. */
-
   static async remove(username) {
     let result = await db.query(
           `DELETE
