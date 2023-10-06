@@ -32,22 +32,10 @@ CREATE TABLE decks (
 
 -- Create the 'cards' table
 CREATE TABLE cards (
-  card_uuid UUID PRIMARY KEY,
-  name TEXT NOT NULL,
-  type_line TEXT NOT NULL,
-  mana_cost TEXT NOT NULL,
-  color_id VARCHAR(5),
-  img_cdn VARCHAR(10) NOT NULL,
-  img_timestamp BIGINT NOT NULL
-);
-
--- Create the 'deck_cards' table
-CREATE TABLE decks_cards (
   deck_id INT
     REFERENCES decks(id)
     ON DELETE CASCADE,
-  card_id UUID
-    REFERENCES cards(card_uuid),
+  card_id UUID,
   quantity NUMERIC NOT NULL DEFAULT 1,
   PRIMARY KEY (deck_id, card_id)
 );
