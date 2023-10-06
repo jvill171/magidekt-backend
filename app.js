@@ -10,7 +10,7 @@ const { NotFoundError } = require("./expressError");
 const { authenticateJWT } = require("./middleware/auth");
 const authRoutes = require("./routes/auth");
 const usersRoutes = require("./routes/users");
-const cardsRoutes = require("./routes/cards");
+const deckDiscoveryRoutes = require("./routes/deckDiscovery");
 
 const morgan = require("morgan");
 
@@ -22,8 +22,8 @@ app.use(morgan("tiny"));
 app.use(authenticateJWT);
 
 app.use("/auth", authRoutes);
-app.use("/users", usersRoutes);
-app.use("/cards", cardsRoutes);
+app.use("/users", usersRoutes); // Has child routes app.use("/:username/decks")
+app.use("/decks", deckDiscoveryRoutes);
 
 
 /** Handle 404 errors -- this matches everything */
