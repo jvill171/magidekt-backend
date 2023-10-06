@@ -6,11 +6,13 @@ const jsonschema = require("jsonschema");
 
 const express = require("express");
 const { ensureCorrectUserOrAdmin, ensureAdmin, ensureLoggedIn } = require("../middleware/auth");
+const { passUsername } = require("../middleware/passUsername");
 const { BadRequestError } = require("../expressError");
 const User = require("../models/user");
 const { createToken } = require("../helpers/tokens");
 const userNewSchema = require("../schemas/user/userNew.json");
 const userUpdateSchema = require("../schemas/user/userUpdate.json");
+const decksRoutes = require("./userDecks");
 
 const router = express.Router();
 
@@ -62,8 +64,7 @@ router.get("/", ensureAdmin, async function (req, res, next) {
 
 /** GET /[username] => { user }
  *
- * Returns { username, displayName, email, isAdmin, decks[] }
- *   where decks is [ { id, deckName, format, colorIdentity }, ... ]
+ * Returns { username, displayName, email, isAdmin, deckCount }
  *
  * Authorization required: admin or same user-as-:username
  **/
@@ -117,6 +118,10 @@ router.delete("/:username", ensureCorrectUserOrAdmin, async function (req, res, 
     return next(err);
   }
 });
+
+
+// userDecks routes 
+router.use("/:username/decks", ensureCorrectUserOrAdmin, passUsername, decksRoutes);
 
 
 module.exports = router;
