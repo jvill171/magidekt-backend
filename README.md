@@ -28,7 +28,7 @@ Here's an illustration of my schema:
 | <span style="color:green">**GET**</span>    | `/users/:username/decks/:deckId`     | Login                      | Get a specific deck, including its cards |
 | <span style="color:#ff9c33">**PATCH**</span>  | `/users/:username/decks/:deckId`     | Correct User or Admin      | Update deck details, excluding cards   |
 | <span style="color:#ff0000">**<span style="color:#ff5f5f">**DELETE**</span>**</span> | `/users/:username/decks/:deckId`     | Correct User or Admin      | Remove a specific deck                 |
-| <span style="color:#0074cc">**POST**</span>   | `/users/:username/decks/:deckId/cards` | Correct User or Admin    | Get cards in a specific deck           |
+| <span style="color:green">**GET**</span>   | `/users/:username/decks/:deckId/cards` | Correct User or Admin    | Get cards in a specific deck           |
 | <span style="color:#0074cc">**POST**</span>   | `/users/:username/decks/:deckId/cards` | Correct User or Admin    | Add cards to a specific deck           |
 | <span style="color:#ff9c33">**PATCH**</span>  | `/users/:username/decks/:deckId/cards` | Correct User or Admin    | Update existing cards in a specific deck |
 | <span style="color:#ff0000">**<span style="color:#ff5f5f">**DELETE**</span>**</span> | `/users/:username/decks/:deckId/cards` | Correct User or Admin    | Remove cards from a specific deck      |
