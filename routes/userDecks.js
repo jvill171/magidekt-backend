@@ -49,7 +49,7 @@ router.post("/", async function (req, res, next) {
 
 
 /** GET / => { deckCollection: 
- * [ {id, deckName, description, format, colorIdentity, tags, deckOwner}, ...] }
+ * [ {id, deckName, description, format, colorIdentity, tags, displayName}, ...] }
  * 
  * Retrieves a list of all of [username]'s decks
  * 
