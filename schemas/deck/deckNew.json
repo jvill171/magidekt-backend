@@ -5,6 +5,7 @@
     "properties": {
         "deckName": {
             "type": "string",
+            "minLength": 1,
             "maxLength": 50
         },
         "description": {
