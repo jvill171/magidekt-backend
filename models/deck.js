@@ -22,13 +22,13 @@ class Deck{
     const foundOwner = ownerRes.rows[0];
 
     if (!foundOwner) throw new NotFoundError(`No user: ${deckOwner || ""}`);
-    
+
     const {deckName, description, format, colorIdentity, tags} = deckData
     // Create new deck in db
     const result = await db.query(
       `INSERT INTO decks
         (deck_name, description, format, color_identity, tags, deck_owner)
-       VALUES($1, $2, $3, $4, $5, $6)
+       VALUES($1, $2, $3, $4, $5::jsonb, $6)
        RETURNING id,
                  deck_name AS "deckName",
                  description,
@@ -36,7 +36,7 @@ class Deck{
                  color_identity AS "colorIdentity",
                  tags,
                  deck_owner AS "deckOwner"`,
-       [deckName, description, format, colorIdentity, tags, deckOwner]);
+       [deckName, description, format, colorIdentity, JSON.stringify(tags), deckOwner]);
 
     const deck = result.rows[0];
     return deck;
