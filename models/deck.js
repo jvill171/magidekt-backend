@@ -155,18 +155,18 @@ class Deck{
   }
   
   
-//   /** Update data with `data`.
-//    *
-//    * This is a "partial update" --- it's fine if data doesn't contain
-//    * all the fields; this only changes provided ones.
-//    *
-//    * Data can include:
-//    *   { deckName, description, format, colorIdentity, tags, deckOwner }
-//    *
-//    * Returns { id, deckName, description, format, colorIdentity, tags, deckOwner }
-//    *
-//    * Throws NotFoundError if not found.
-//    */
+  /** Update data with `data`.
+   *
+   * This is a "partial update" --- it's fine if data doesn't contain
+   * all the fields; this only changes provided ones.
+   *
+   * Data can include:
+   *   { deckName, description, format, colorIdentity, tags, deckOwner }
+   *
+   * Returns { id, deckName, description, format, colorIdentity, tags, deckOwner }
+   *
+   * Throws NotFoundError if not found.
+   */
 static async update(deckId, data) {
     const { setCols, values } = sqlForPartialQuery(
         data,
@@ -211,6 +211,27 @@ static async update(deckId, data) {
     const deck = result.rows[0];
 
     if (!deck) throw new NotFoundError(`No deck with id: ${id}`);
+  }
+
+  
+  /** Returns an array of all valid deck_formats
+   *
+   * Throws NotFoundError if no deck_formats found.
+   */
+
+  static async getDeckFormats() {
+
+    let result = await db.query(
+      `SELECT enumlabel
+       FROM pg_enum
+       WHERE enumtypid = 'deck_formats'::regtype;`
+      );
+
+    const formats = result.rows.map(f => f.enumlabel);
+
+    if(!formats) throw new NotFoundError(`No deck_formats exist`)
+
+    return formats;
   }
 
 }

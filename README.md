@@ -17,6 +17,7 @@ Here's an illustration of my schema:
 | <span style="color:#0074cc">**POST**</span>   | `/auth/token`                        | -                          | Login                                 |
 | <span style="color:#0074cc">**POST**</span>   | `/auth/register`                     | -                          | Register                              |
 | <span style="color:green">**GET**</span>    | `/decks`                             | -                          | Get all decks in DB (Paginated)       |
+| <span style="color:green">**GET**</span>    | `/decks/deck_formats`                     | Login                      | Get a list of all valid deck_formats    |
 | <span style="color:green">**GET**</span>    | `/decks/:deckId`                     | Login                      | Get a specific deck                   |
 | <span style="color:green">**GET**</span>    | `/users`                             | Admin                      | Get all users                         |
 | <span style="color:#0074cc">**POST**</span>   | `/users`                             | Admin                      | Create a user account                 |

@@ -39,6 +39,25 @@ router.get("/", async function (req, res, next) {
   }
 });
 
+
+/** GET /deck_formats => deckFormats
+ * 
+ * Returns: deckFormats:[]
+ *    Where each entry in deckFormats is a valid format queried from the DB
+ * 
+ * Authorization required: Logged in
+ **/
+
+  router.get("/deck_formats", ensureLoggedIn, async function (req, res, next) {
+    try {
+      const deckFormats = await Deck.getDeckFormats();
+      return res.json({ deckFormats });
+
+    } catch (err) {
+      return next(err);
+    }
+  });
+
 /** 
  * GET /[deckId] => { deck }
  * 
