@@ -84,24 +84,27 @@ class Deck{
 
   /** Find all decks owned by [username].
    *
-   * Returns [{id, deckName, description, format, colorIdentity, tags, displayName}, ...]
+   * Returns [{id, deckName, description, format, colorIdentity, tags, displayName, cardCount}, ...]
    * 
    **/
   
   static async findUserDecks(username) {
     const result = await db.query(
-        `SELECT d.id,
-                d.deck_name AS "deckName",
-                d.description,
-                d.format,
-                d.color_identity AS "colorIdentity",
-                d.tags,
-                u.display_name AS "displayName"
-        FROM decks d
-        JOIN users u ON d.deck_owner = u.username
-        WHERE d.deck_owner = $1
-        ORDER BY d.deck_name`, [username]
-    );
+      `SELECT d.id,
+              d.deck_name AS "deckName",
+              d.description,
+              d.format,
+              d.color_identity AS "colorIdentity",
+              d.tags,
+              u.display_name AS "displayName",
+      COUNT(c.card_id) AS "cardCount"
+      FROM decks d
+      JOIN users u ON d.deck_owner = u.username
+      LEFT JOIN cards c ON d.id = c.deck_id
+      WHERE d.deck_owner = $1
+      GROUP BY d.id, u.display_name
+      ORDER BY d.deck_name`,
+      [username]);
 
     return result.rows;
   }
