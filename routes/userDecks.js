@@ -218,9 +218,9 @@ router.delete("/:deckId/cards", async function (req, res, next) {
         const errs = validator.errors.map(e => e.stack);
         throw new BadRequestError(errs);
     }
-    
+
     await Card.remove(req.params.deckId, req.body.cardIds);
-    return res.json({ deleted: cardIds });
+    return res.json({ deleted: req.body.cardIds });
   } catch (err) {
     return next(err);
   }
