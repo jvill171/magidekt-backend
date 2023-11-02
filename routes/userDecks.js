@@ -158,6 +158,7 @@ router.post("/:deckId/cards", async function (req, res, next) {
 });
 
 /** GET /[deckId]/
+ *      { deckCards: [ {cardId, quantity}, ...] }  => { cards }
  * 
  * Simply returns all cards within a deck.
  * 
@@ -178,7 +179,7 @@ router.get("/:deckId/cards", async function (req, res, next) {
 
 /** PATCH /[deckId]/
  * 
- * Update the quantity of each cards passed in
+ * Update the quantity of each cards passed in:
  * 
  * Returns
  *    cards: { rejectedData, updated }
@@ -201,7 +202,8 @@ router.patch("/:deckId/cards", async function (req, res, next) {
   }
 });
 /** DELETE /[deckId]/cards  {cardIds} => deleted: [cardIds]
- *    where cardIds is an array of cardIds
+ *    where cardIds is an array of cardIds like:
+ *    cardIds:[id, id, id]
  * 
  * Delete each card passed in from deck [deckId]
  * 
