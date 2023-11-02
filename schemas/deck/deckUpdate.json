@@ -37,7 +37,7 @@
                 "predh"
             ]
         },
-        "color_identity": {
+        "colorIdentity": {
           "type": "string",
           "maxLength": 5
         },
