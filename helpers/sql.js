@@ -11,6 +11,7 @@ const { BadRequestError } = require("../expressError");
  * @param dataToUpdate {Object} {field1: newVal, field2: newVal, ...}
  * @param jsToSql {Object} maps js-style data fields to database column names,
  *   like {displayName: 'MTG_Master', email: "magidekt@magidekt.xyz"}
+ * @param listJSONB [Array] an array of values that are considered JSONB
  *
  * @returns {Object} {sqlSetCols, dataToUpdate}
  *
@@ -19,19 +20,30 @@ const { BadRequestError } = require("../expressError");
  *     values: ['MTG_Master', 'magidekt@magidekt.xyz'] }
  */
 
-function sqlForPartialQuery(dataToUpdate, jsToSql) {
+function sqlForPartialQuery(dataToUpdate, jsToSql, listJSONB=[]) {
   const keys = Object.keys(dataToUpdate);
   if (keys.length === 0) throw new BadRequestError("No data");
 
+  const vals = Object.values(dataToUpdate);
   // {displayName: 'MTG_Master', email: "magidekt@magidekt.xyz"}
   //      => [display_name"=$1', '"email"=$2']
-  const cols = keys.map((colName, idx) =>
-      `"${jsToSql[colName] || colName}"=$${idx + 1}`
-  );
+  const cols = keys.map((colName, idx) =>{
+    // Base return value
+    const returnVal = `"${jsToSql[colName] || colName}"=$${idx + 1}`;
+
+    if( !listJSONB.includes(colName) ){
+      // Normal return
+      return returnVal;
+    }else{
+      // Modify jsonb values & column & return
+      vals[idx] = JSON.stringify(vals[idx]);
+      return `${returnVal}::jsonb`;
+    }
+  });
 
   return {
     setCols: cols.join(", "),
-    values: Object.values(dataToUpdate),
+    values: vals,
   };
 }
 

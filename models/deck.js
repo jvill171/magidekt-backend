@@ -177,7 +177,8 @@ static async update(deckId, data) {
           deckName: "deck_name",
           colorIdentity: "color_identity",
           deckOwner: "deck_owner"
-        });
+        },
+        ["tags"]);
 
     const id_VarIdx = "$" + (values.length + 1);
     const querySql = 
@@ -191,7 +192,6 @@ static async update(deckId, data) {
                     color_identity AS "colorIdentity",
                     tags,
                     deck_owner AS "deckOwner"`;
-
     const result = await db.query(querySql, [...values, deckId]);
     const deck = result.rows[0];
 
