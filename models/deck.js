@@ -52,7 +52,7 @@ class Deck{
    * 
    **/
   
-  static async findAllDecks({page}) {
+  static async findAllDecks({page = 1}) {
     const offsetVal = (page - 1) * 50;
     const result = await db.query(
         `SELECT id,
@@ -71,7 +71,7 @@ class Deck{
     if(decks.length < 1) throw new NotFoundError(`No decks found`)
 
     const countRes = await db.query(`SELECT COUNT(*) FROM decks`);
-    const totalDecks = countRes.rows[0].count;
+    const totalDecks = parseInt(countRes.rows[0].count);
     const pageCount = Math.floor((totalDecks-1) / 50) + 1;
 
     return {
@@ -89,6 +89,15 @@ class Deck{
    **/
   
   static async findUserDecks(username) {
+    // Ensure the owner exists
+    const userRes = await db.query(
+      `SELECT username
+       FROM users
+       WHERE username = $1`, [username]
+    )
+    const foundOwner = userRes.rows[0];
+    if (!foundOwner) throw new NotFoundError(`No user: ${username || ""}`);
+
     const result = await db.query(
       `SELECT d.id,
               d.deck_name AS "deckName",
