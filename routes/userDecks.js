@@ -94,13 +94,11 @@ router.get("/:deckId", async function (req, res, next) {
 
 router.patch("/:deckId", async function (req, res, next) {
   try {
-    console.log(`\nGOT DATA`, req.body,`\n`)
     const validator = jsonschema.validate(req.body, deckUpdateSchema);
     if (!validator.valid) {
       const errs = validator.errors.map(e => e.stack);
       throw new BadRequestError(errs);
     }
-    console.log(`\VALID DATA\n`)
 
     const deck = await Deck.update(req.params.deckId, req.body);
     return res.json({ deck });
