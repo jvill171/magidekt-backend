@@ -8,19 +8,19 @@ const { BadRequestError } = require("../expressError");
  * 
  * It can also be used to make the WHERE clause of a SQL SELECT statement.
  *
- * @param dataToUpdate {Object} {field1: newVal, field2: newVal, ...}
+ * @param dataToUpdate {Object} {field1: val1, field2: val2, ...}
  * @param jsToSql {Object} maps js-style data fields to database column names,
- *   like {displayName: 'MTG_Master', email: "magidekt@magidekt.xyz"}
- * @param listJSONB [Array] an array of values that are considered JSONB
+ *   like {fieldOne: 'field_one', fieldTwo: "field_two"}
+ * @param listJSONB [Array] an array of values to be considered as JSONB
  *
  * @returns {Object} {sqlSetCols, dataToUpdate}
  *
- * @example {displayName: 'MTG_Master', email: "magidekt@magidekt.xyz"} =>
- *   { setCols: '"displayName"=$1, "email"=$2',
- *     values: ['MTG_Master', 'magidekt@magidekt.xyz'] }
+ * @example ( { f1:"v1", f2:"v2"}, { f1:"F_1" }, ["f2"] ) =>
+ *   { setCols: '"F_1"=$1, "f2"=$2::jsonb',
+ *     values: ['v1', 'v2'] }
  */
 
-function sqlForPartialQuery(dataToUpdate, jsToSql, listJSONB=[]) {
+function sqlForPartialQuery(dataToUpdate, jsToSql, listJSONB = []) {
   const keys = Object.keys(dataToUpdate);
   if (keys.length === 0) throw new BadRequestError("No data");
 
@@ -52,12 +52,12 @@ function sqlForPartialQuery(dataToUpdate, jsToSql, listJSONB=[]) {
  * 
  * @param dataToAdd Array of Objects [ { prop1, prop2, ... }, ...]
  * 
- * @returns placeholders
+ * @returns a string of placeholders like: '($1, $2), ($3, $4), ...'
  * 
  * @example [{"cardId": 'A', "quantity": 2}, {"cardId": 'B', "quantity": 3}] =>
  *     placeholders: '($1, $2), ($3, $4)'
  */
-function sqlForBulkInsertQuery(dataToAdd){
+function sqlForBulkInsertQuery(dataToAdd = []){
   if(dataToAdd.length === 0) throw new BadRequestError("No Data")
 
   // Based on first obj in array, count how many properties to expect
