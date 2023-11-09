@@ -1,6 +1,5 @@
 "use strict";
 
-const { UnauthorizedError } = require("../expressError");
 const { passUsername } = require("./passUsername");
 
 describe("passUsername", function (){
