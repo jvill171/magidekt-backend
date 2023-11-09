@@ -91,7 +91,7 @@ class Card{
    **/
   static async findAll() {
     const cardRes = await db.query(
-      `SELECT deck_id AS "deckId"
+      `SELECT deck_id AS "deckId",
               card_id AS "cardId",
               quantity
        FROM cards`,
