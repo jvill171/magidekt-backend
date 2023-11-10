@@ -85,7 +85,7 @@ router.get("/:deckId", async function (req, res, next) {
 /** PATCH /[cardUUID] { deckId, deck } => { deck }
  *
  * Data can include:
- *   { deckName, description, format, color_identity, tags }
+ *   { deckName, description, format, colorIdentity, tags }
  *
  * Returns deck: { id, deckName, description, format, colorIdentity, tags, deckOwner }
  *
